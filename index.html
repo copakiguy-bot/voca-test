@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전우 보카 테스트 — 2027 심슨 보카</title>
+<style>
+  :root{
+    --army:#3e4a2e; --army-dark:#2c351f; --army-light:#5a6b44;
+    --khaki:#c9c19a; --paper:#f4f2e8; --ink:#22261a;
+    --ok:#2e7d32; --bad:#c62828; --accent:#8a6d1f;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    background:linear-gradient(160deg,#2c351f 0%,#3e4a2e 55%,#4a573a 100%);
+    min-height:100vh; display:flex; align-items:flex-start; justify-content:center;
+    padding:24px 12px; color:var(--ink);
+  }
+  .card{
+    width:100%; max-width:560px; background:var(--paper);
+    border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.45);
+    overflow:hidden;
+  }
+  header{
+    background:var(--army-dark); color:var(--khaki);
+    padding:20px 24px; text-align:center;
+  }
+  header h1{font-size:1.45rem; letter-spacing:2px;}
+  header p{font-size:.8rem; opacity:.75; margin-top:4px; letter-spacing:1px;}
+  .body{padding:24px;}
+  .label{font-weight:700; font-size:.9rem; margin:18px 0 8px; color:var(--army-dark); letter-spacing:1px;}
+  .label:first-child{margin-top:0;}
+  .optgrid{display:grid; gap:8px;}
+  .optgrid.cols3{grid-template-columns:repeat(3,1fr);}
+  .selbtn{
+    border:2px solid var(--army-light); background:#fff; border-radius:10px;
+    padding:12px 10px; font-size:.9rem; cursor:pointer; font-weight:600;
+    color:var(--army-dark); transition:.15s; text-align:center; font-family:inherit;
+  }
+  .selbtn small{display:block; font-weight:400; font-size:.72rem; margin-top:3px; color:#666;}
+  .selbtn.active{background:var(--army); color:#fff; border-color:var(--army);}
+  .selbtn.active small{color:var(--khaki);}
+  .go{
+    width:100%; margin-top:24px; padding:15px; border:none; border-radius:10px;
+    background:var(--accent); color:#fff; font-size:1.05rem; font-weight:800;
+    letter-spacing:3px; cursor:pointer; font-family:inherit; transition:.15s;
+  }
+  .go:hover{filter:brightness(1.1);}
+  .go:disabled{background:#aaa; cursor:not-allowed;}
+  /* quiz */
+  .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:.85rem; font-weight:700; color:var(--army-dark);}
+  .progress{height:8px; background:#ddd8c2; border-radius:4px; overflow:hidden; margin-bottom:22px;}
+  .progress i{display:block; height:100%; background:var(--army); transition:width .3s;}
+  .prompt{
+    background:#fff; border:2px solid var(--army-light); border-radius:12px;
+    padding:26px 18px; text-align:center; margin-bottom:18px;
+  }
+  .prompt .ptype{font-size:.72rem; color:#888; letter-spacing:1px; margin-bottom:8px;}
+  .prompt .ptext{font-size:1.35rem; font-weight:800; color:var(--army-dark); line-height:1.45; word-break:keep-all;}
+  .choices{display:grid; gap:10px;}
+  .choice{
+    border:2px solid #cfc9ab; background:#fff; border-radius:10px;
+    padding:13px 14px; font-size:.95rem; text-align:left; cursor:pointer;
+    font-family:inherit; line-height:1.4; transition:.12s; word-break:keep-all;
+  }
+  .choice:hover:not(:disabled){border-color:var(--army); background:#f2f4ea;}
+  .choice:disabled{cursor:default;}
+  .choice .num{display:inline-block; font-weight:800; color:var(--accent); margin-right:8px;}
+  .choice.correct{background:#e5f2e6; border-color:var(--ok); color:var(--ok); font-weight:700;}
+  .choice.wrong{background:#fdecec; border-color:var(--bad); color:var(--bad);}
+  .shortbox{display:flex; gap:8px;}
+  .shortbox input{
+    flex:1; padding:13px 14px; font-size:1rem; border:2px solid var(--army-light);
+    border-radius:10px; font-family:inherit; outline:none;
+  }
+  .shortbox input:focus{border-color:var(--accent);}
+  .shortbox button{
+    padding:0 22px; border:none; border-radius:10px; background:var(--army);
+    color:#fff; font-weight:700; font-size:.95rem; cursor:pointer; font-family:inherit;
+  }
+  .feedback{margin-top:14px; text-align:center; font-weight:800; font-size:1rem; min-height:26px;}
+  .feedback.ok{color:var(--ok);}
+  .feedback.no{color:var(--bad);}
+  .nextbtn{
+    width:100%; margin-top:14px; padding:13px; border:none; border-radius:10px;
+    background:var(--army-dark); color:var(--khaki); font-size:.95rem; font-weight:700;
+    letter-spacing:2px; cursor:pointer; font-family:inherit;
+  }
+  /* result */
+  .score{
+    text-align:center; padding:10px 0 4px;
+  }
+  .score .num{font-size:3.4rem; font-weight:900; color:var(--army-dark);}
+  .score .num span{font-size:1.3rem; color:#888; font-weight:600;}
+  .verdict{
+    margin:14px 0 20px; text-align:center; font-size:1.15rem; font-weight:900;
+    padding:16px 12px; border-radius:12px; letter-spacing:1px; word-break:keep-all;
+  }
+  .verdict.v90{background:#e5f2e6; color:var(--ok); border:2px solid var(--ok);}
+  .verdict.v80{background:#eef3e2; color:#558b2f; border:2px solid #558b2f;}
+  .verdict.v70{background:#fdf3dc; color:#b07d10; border:2px solid #d9a520;}
+  .verdict.v0{background:#fdecec; color:var(--bad); border:2px solid var(--bad);}
+  .review{margin-top:6px;}
+  .review h3{font-size:.9rem; color:var(--army-dark); margin-bottom:8px; letter-spacing:1px;}
+  .rv{
+    background:#fff; border:1.5px solid #ddd6b8; border-radius:10px;
+    padding:10px 12px; margin-bottom:8px; font-size:.87rem; line-height:1.5;
+  }
+  .rv b{color:var(--army-dark);}
+  .rv .my{color:var(--bad);}
+  .rv .ans{color:var(--ok); font-weight:700;}
+  .btnrow{display:flex; gap:10px; margin-top:20px;}
+  .btnrow button{flex:1; padding:14px; border:none; border-radius:10px; font-weight:800; font-size:.95rem; cursor:pointer; font-family:inherit; letter-spacing:1px;}
+  .btn-retry{background:var(--accent); color:#fff;}
+  .btn-home{background:var(--army-dark); color:var(--khaki);}
+  .hidden{display:none;}
+  footer{text-align:center; font-size:.7rem; color:#8b8b76; padding:0 0 18px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <header>
+    <h1>⭐ 전우 보카 테스트 ⭐</h1>
+    <p>2027 심슨 보카 · DAY별 랜덤 10문제</p>
+  </header>
+  <div class="body">
+
+    <!-- 시작 화면 -->
+    <div id="screen-start">
+      <div class="label">📅 DAY 선택</div>
+      <div class="optgrid cols3" id="daySel">
+        <button class="selbtn active" data-day="day1">Day 01</button>
+        <button class="selbtn" data-day="day2">Day 02</button>
+        <button class="selbtn" data-day="all">전체<small>Day 01+02</small></button>
+      </div>
+      <div class="label">📝 문제 유형 선택</div>
+      <div class="optgrid" id="typeSel">
+        <button class="selbtn active" data-type="e2k">유형 1 — 영어 단어 보고 한글 뜻 고르기<small>4지선다</small></button>
+        <button class="selbtn" data-type="k2e">유형 2 — 한글 뜻 보고 영어 단어 고르기<small>4지선다</small></button>
+        <button class="selbtn" data-type="write">유형 3 — 한글 뜻 보고 영어 단어 쓰기<small>주관식</small></button>
+      </div>
+      <button class="go" id="btnStart">🎖️ 테스트 개시</button>
+    </div>
+
+    <!-- 퀴즈 화면 -->
+    <div id="screen-quiz" class="hidden">
+      <div class="topbar">
+        <span id="qCounter">1 / 10</span>
+        <span id="qScore">정답 0</span>
+      </div>
+      <div class="progress"><i id="qBar" style="width:0%"></i></div>
+      <div class="prompt">
+        <div class="ptype" id="qType"></div>
+        <div class="ptext" id="qText"></div>
+      </div>
+      <div class="choices" id="qChoices"></div>
+      <div class="shortbox hidden" id="qShort">
+        <input type="text" id="qInput" placeholder="영어 단어를 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="qSubmit">확인</button>
+      </div>
+      <div class="feedback" id="qFeed"></div>
+      <button class="nextbtn hidden" id="btnNext">다음 문제 ▶</button>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="screen-result" class="hidden">
+      <div class="score"><div class="num"><span id="rScore">0</span><span> / 100점</span></div></div>
+      <div class="verdict" id="rVerdict"></div>
+      <div class="review" id="rReview"></div>
+      <div class="btnrow">
+        <button class="btn-retry" id="btnRetry">🔄 재응시 (문제 새로 랜덤)</button>
+        <button class="btn-home" id="btnHome">⚙️ 설정 변경</button>
+      </div>
+    </div>
+
+  </div>
+  <footer>출처: 2027 심슨 보카 DAY별 테스트 (Day 01–02)</footer>
+</div>
+
+<script>
+const WORDS = {
+day1: [
+["susceptible","(병에) 걸리기 쉬운, 취약한; 영향받기 쉬운, 민감한"],
+["retain","유지하다, 보유하다"],
+["resume","다시 시작하다, 재개하다; 이력서"],
+["inhabit","살다, 거주하다"],
+["reserve","예약하다; 비축하다, 남겨 두다; 예비, 비축"],
+["perceive","인지하다, 알아차리다"],
+["facilitate","쉽게[용이하게] 하다, 촉진시키다"],
+["obtain","얻다, 획득하다"],
+["transform","변형시키다, 바꾸다"],
+["factual","사실적인, 사실에 입각한"],
+["intercept","가로채다; 가로막다"],
+["propose","제안[제의]하다"],
+["exclude","제외하다, 배제하다"],
+["maintain","유지하다, 지속하다; 주장하다"],
+["pose","(문제 등을) 제기하다, 야기하다; 자세를 취하다"],
+["habitat","서식지, 거주지"],
+["deficient","부족한; 결함이 있는"],
+["preserve","보존[보호]하다, 지키다"],
+["oppose","반대하다, 대항하다"],
+["inhibit","억제하다"],
+["expose","노출시키다, 드러내다; 폭로하다"],
+["uniform","제복, 유니폼; 획일적인, 균일한"],
+["dispose","배치하다; 처리[처분]하다 (of)"],
+["reform","개혁하다, 개선하다; 개혁, 개선"],
+["assume","가정하다, 추정하다; (책임을) 지다, (역할을) 맡다"],
+["prohibit","금지하다; 막다, 방해하다"],
+["conceive","(생각을) 품다, 상상하다; 임신하다"],
+["formula","식, (수학) 공식"],
+["conserve","보존[보호]하다, 아끼다"],
+["sufficient","충분한"],
+["contain","포함하다, 함유하다; 억제하다"],
+["inform","알리다, 통지하다"],
+["impose","부과하다; 강요하다"],
+["serve","봉사[복무]하다, 제공하다; 역할을 하다"],
+["presume","추정하다, 간주하다"],
+["conclude","결론짓다, 끝내다; 결정[결심]하다"],
+["exhibit","전시[진열]하다; 나타내다, 보이다"],
+["suppose","생각하다, 가정하다"],
+["include","포함하다"],
+["facility","시설, 설비; 편의, 손쉬움"],
+["enclose","동봉하다, 에워싸다"],
+["conform","따르다, 순응하다, 맞추다 (to)"],
+["sustain","떠받치다, 지탱하다; 유지하다, 지속하다"],
+["deceive","속이다, 기만하다"],
+["consume","소비[소모]하다; 먹다, 마시다"],
+["disclose","드러내다, 폭로하다"],
+["compose","구성하다; 작곡하다, 작문하다"],
+["habitual","습관적인"],
+["proficient","능숙한, 숙련된"],
+["observe","관찰하다; (법 등을) 준수하다; 말하다, 언급하다"]
+],
+day2: [
+["consequence","결과; 영향; 중요성"],
+["advent","출현, 도래"],
+["recede","후퇴하다, 물러나다; 약해지다"],
+["fertile","비옥한, 생산력 있는; 풍부한"],
+["suit","적합하다, 어울리다; 정장; (법률) 소송"],
+["consent","동의[허락]하다; 동의, 합의"],
+["adventure","모험(심); 모험하다"],
+["grade","등급, 단계; 학년; 성적; 등급을 매기다"],
+["confer","상의하다, 회의하다; 수여하다"],
+["intact","온전한, 손상되지 않은"],
+["pathetic","불쌍한, 애처로운"],
+["tangible","만질 수 있는, 유형의; 실질적인, 확실한"],
+["access","접근, 이용, 출입; 접근하다"],
+["inspire","(감정을) 불어넣다, 영감을 주다; 고무[격려]하다"],
+["contagious","전염되는, 전염성의"],
+["persecute","박해하다"],
+["revenue","세입, 수입"],
+["empathy","감정 이입, 공감"],
+["sequence","연속적인 사건들; 순서, 차례"],
+["delude","속이다, 착각하게 하다"],
+["defer","미루다, 연기하다; 존중하다"],
+["proceed","나아가다, (계속) 진행하다"],
+["prefer","선호하다, 더 좋아하다"],
+["respire","호흡하다, 숨 쉬다"],
+["resent","분개하다, 불쾌하게 여기다"],
+["sympathy","동정, 연민; 공감"],
+["ingredient","(요리) 재료; 성분, 구성 요소"],
+["infer","추론[추측]하다"],
+["consecutive","연속적인, 계속되는"],
+["contaminate","더럽히다, 오염시키다"],
+["expire","만료되다"],
+["precede","-에 선행하다, -보다 먼저 일어나다; -보다 우선하다"],
+["allude","넌지시 언급하다, 암시하다"],
+["avenue","대로, 가(街)"],
+["conventional","관습[관례]적인, 전통적인"],
+["regress","퇴보하다, 퇴행하다"],
+["spirit","영혼, 정신; 기운, 활기"],
+["pursue","추구하다; 뒤쫓다, 추적하다"],
+["illusion","환상, 환각; 착각, 오해"],
+["exceed","넘다, 초과하다; 능가하다"],
+["assent","동의[찬성]하다; 동의, 찬성, 승인"],
+["subsequent","그 다음의, 차후의"],
+["tactile","촉각의"],
+["conspire","공모하다, 음모를 꾸미다"],
+["gradual","단계적인, 점진적인"],
+["sentiment","감정, 정서; 감상"],
+["aspire","열망하다, 갈망하다 (to)"],
+["integrate","통합시키다"],
+["predecessor","전임자, 선배"],
+["antipathy","반감, 혐오"]
+]
+};
+
+const TYPE_LABEL = {
+  e2k: "영어 단어의 뜻을 고르시오",
+  k2e: "한글 뜻에 맞는 영어 단어를 고르시오",
+  write: "한글 뜻에 맞는 영어 단어를 쓰시오"
+};
+
+let cfg = { day: "day1", type: "e2k" };
+let quiz = [];      // [{word, meaning, choices?, answerIdx?}]
+let cur = 0, correct = 0;
+let record = [];    // {q, myAns, answer, ok}
+let answered = false;
+
+// ------- 시작 화면 -------
+function bindSel(containerId, key){
+  const box = document.getElementById(containerId);
+  box.querySelectorAll(".selbtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      box.querySelectorAll(".selbtn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      cfg[key] = btn.dataset[key === "day" ? "day" : "type"];
+    });
+  });
+}
+bindSel("daySel","day");
+bindSel("typeSel","type");
+
+document.getElementById("btnStart").addEventListener("click", startQuiz);
+document.getElementById("btnRetry").addEventListener("click", startQuiz);
+document.getElementById("btnHome").addEventListener("click", ()=>{
+  show("screen-start");
+});
+
+function pool(){
+  return cfg.day === "all" ? WORDS.day1.concat(WORDS.day2) : WORDS[cfg.day];
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startQuiz(){
+  const p = pool();
+  const picked = shuffle(p).slice(0,10);
+  quiz = picked.map(([w,m])=>{
+    const item = { word:w, meaning:m };
+    if(cfg.type !== "write"){
+      // 오답 보기 3개: 같은 풀에서 자기 자신 제외
+      const others = shuffle(p.filter(x=>x[0]!==w)).slice(0,3);
+      const opts = shuffle([[w,m], ...others]);
+      item.choices = opts.map(o => cfg.type==="e2k" ? o[1] : o[0]);
+      item.answerIdx = opts.findIndex(o=>o[0]===w);
+    }
+    return item;
+  });
+  cur = 0; correct = 0; record = [];
+  show("screen-quiz");
+  renderQ();
+}
+
+function show(id){
+  ["screen-start","screen-quiz","screen-result"].forEach(s=>{
+    document.getElementById(s).classList.toggle("hidden", s!==id);
+  });
+}
+
+// ------- 퀴즈 진행 -------
+function renderQ(){
+  answered = false;
+  const q = quiz[cur];
+  document.getElementById("qCounter").textContent = (cur+1)+" / "+quiz.length;
+  document.getElementById("qScore").textContent = "정답 "+correct;
+  document.getElementById("qBar").style.width = (cur/quiz.length*100)+"%";
+  document.getElementById("qType").textContent = "Q"+(cur+1)+". "+TYPE_LABEL[cfg.type];
+  document.getElementById("qText").textContent = cfg.type==="e2k" ? q.word : q.meaning;
+  document.getElementById("qFeed").textContent = "";
+  document.getElementById("qFeed").className = "feedback";
+  document.getElementById("btnNext").classList.add("hidden");
+
+  const box = document.getElementById("qChoices");
+  const shortBox = document.getElementById("qShort");
+  box.innerHTML = "";
+
+  if(cfg.type === "write"){
+    box.classList.add("hidden");
+    shortBox.classList.remove("hidden");
+    const inp = document.getElementById("qInput");
+    inp.value = ""; inp.disabled = false;
+    document.getElementById("qSubmit").disabled = false;
+    setTimeout(()=>inp.focus(), 50);
+  }else{
+    shortBox.classList.add("hidden");
+    box.classList.remove("hidden");
+    q.choices.forEach((c,i)=>{
+      const b = document.createElement("button");
+      b.className = "choice";
+      b.innerHTML = '<span class="num">'+(i+1)+'</span>'+escapeHtml(c);
+      b.addEventListener("click", ()=>pick(i,b));
+      box.appendChild(b);
+    });
+  }
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function pick(i, btn){
+  if(answered) return;
+  answered = true;
+  const q = quiz[cur];
+  const ok = i === q.answerIdx;
+  const btns = document.querySelectorAll("#qChoices .choice");
+  btns.forEach(b=>b.disabled = true);
+  btns[q.answerIdx].classList.add("correct");
+  if(!ok) btn.classList.add("wrong");
+  afterAnswer(ok, q.choices[i]);
+}
+
+document.getElementById("qSubmit").addEventListener("click", submitWrite);
+document.getElementById("qInput").addEventListener("keydown", e=>{
+  if(e.key === "Enter") submitWrite();
+});
+
+function submitWrite(){
+  if(answered) return;
+  const inp = document.getElementById("qInput");
+  const val = inp.value.trim();
+  if(!val) { inp.focus(); return; }
+  answered = true;
+  inp.disabled = true;
+  document.getElementById("qSubmit").disabled = true;
+  const q = quiz[cur];
+  const ok = val.toLowerCase() === q.word.toLowerCase();
+  afterAnswer(ok, val);
+}
+
+function afterAnswer(ok, myAns){
+  const q = quiz[cur];
+  if(ok) correct++;
+  record.push({ q, myAns, ok });
+  const feed = document.getElementById("qFeed");
+  feed.textContent = ok ? "⭕ 정답!" : "❌ 오답! 정답: "+q.word+" — "+q.meaning;
+  feed.classList.add(ok ? "ok" : "no");
+  document.getElementById("qScore").textContent = "정답 "+correct;
+  const nb = document.getElementById("btnNext");
+  nb.textContent = cur === quiz.length-1 ? "결과 확인 ▶" : "다음 문제 ▶";
+  nb.classList.remove("hidden");
+  nb.focus();
+}
+
+document.getElementById("btnNext").addEventListener("click", ()=>{
+  cur++;
+  if(cur >= quiz.length) showResult();
+  else renderQ();
+});
+
+// ------- 결과 -------
+function showResult(){
+  const score = correct * 10;
+  document.getElementById("rScore").textContent = score;
+  const v = document.getElementById("rVerdict");
+  if(score >= 90){ v.textContent = "🎖️ 전우! 이미 합격입니다"; v.className = "verdict v90"; }
+  else if(score >= 80){ v.textContent = "💪 전우! 잘하면 합격입니다"; v.className = "verdict v80"; }
+  else if(score >= 70){ v.textContent = "🍀 전우! 운좋으면 합격입니다"; v.className = "verdict v70"; }
+  else { v.textContent = "🥔 전우! 깡이나 추러 가시죠"; v.className = "verdict v0"; }
+
+  const rv = document.getElementById("rReview");
+  const wrongs = record.filter(r=>!r.ok);
+  if(wrongs.length === 0){
+    rv.innerHTML = '<h3>📋 오답 노트</h3><div class="rv">전 문항 정답! 완벽합니다, 전우! 🫡</div>';
+  }else{
+    rv.innerHTML = '<h3>📋 오답 노트 ('+wrongs.length+'개)</h3>' + wrongs.map(r=>{
+      const my = r.myAns ? escapeHtml(String(r.myAns)) : "(무응답)";
+      return '<div class="rv"><b>'+escapeHtml(r.q.word)+'</b> — '+escapeHtml(r.q.meaning)+
+             '<br>내 답: <span class="my">'+my+'</span> → 정답: <span class="ans">'+escapeHtml(cfg.type==="e2k" ? r.q.meaning : r.q.word)+'</span></div>';
+    }).join("");
+  }
+  show("screen-result");
+}
+</script>
+</body>
+</html>
